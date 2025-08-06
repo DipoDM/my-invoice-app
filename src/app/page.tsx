@@ -1,58 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button"; // ShadCN Button
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"; // ShadCN Card
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"; // ShadCN Accordion
+} from "@/components/ui/accordion";
+
+import { useDarkMode } from "@/hooks/useDarkMode";
+import { Moon, Sun } from "lucide-react";
 
 const sections = ["features", "pricing", "faq"];
 
 export default function Home() {
+  const { isDark, toggleDarkMode } = useDarkMode(); // ✅ Correct usage
   const [activeSection, setActiveSection] = useState<string>("");
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
-  useEffect(() => {
-    // Set initial dark mode state based on system preference or local storage
-    const storedTheme = localStorage.getItem("theme");
-    if (storedTheme) {
-      setIsDarkMode(storedTheme === "dark");
-      document.documentElement.classList.toggle("dark", storedTheme === "dark");
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add("dark");
-    }
-
-    const handleScroll = () => {
-      const offsets = sections.map((id) => {
+useEffect(() => {
+  const handleScroll = () => {
+    const offsets = sections
+      .map((id) => {
         const el = document.getElementById(id);
-        // Adjust offset to account for sticky header height (e.g., 80px)
         return el ? { id, top: el.getBoundingClientRect().top - 80 } : null;
-      }).filter(Boolean) as { id: string; top: number }[];
+      })
+      .filter(Boolean) as { id: string; top: number }[];
 
-      // Find the first section that is at or above the top of the viewport
-      const active = offsets.find((section) => section.top <= 0) || offsets[0]; // Changed to <= 0 for better active state
-      if (active && active.id !== activeSection) {
-        setActiveSection(active.id);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [activeSection]); // Added activeSection to dependency array to re-run effect when it changes
-
-  const toggleTheme = () => {
-    setIsDarkMode((prev) => {
-      const newMode = !prev;
-      localStorage.setItem("theme", newMode ? "dark" : "light");
-      document.documentElement.classList.toggle("dark", newMode);
-      return newMode;
-    });
+    const active = offsets.find((section) => section.top <= 0) || offsets[0];
+    if (active && active.id !== activeSection) {
+      setActiveSection(active.id);
+    }
   };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, [activeSection]);
+
+ // Added activeSection to dependency array to re-run effect when it changes
+
 
   return (
     <main className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-purple-50 text-gray-900 dark:from-gray-900 dark:to-black dark:text-white transition-colors duration-300">
@@ -80,19 +67,14 @@ export default function Home() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={toggleTheme}
+           
+            onClick={toggleDarkMode}
+
             className="rounded-full"
             aria-label="Toggle dark mode"
           >
-            {isDarkMode ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h1M3 12h1m15.325-4.275l-.707-.707M4.372 19.325l-.707-.707m10.606 0l.707-.707M4.372 4.372l-.707-.707" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            )}
+            {isDark ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />
+}
           </Button>
         </nav>
       </header>
@@ -157,7 +139,14 @@ export default function Home() {
               { title: "Starter", price: "$5/mo", desc: "Unlimited invoices, no watermark", details: ["Unlimited invoices", "No watermarks", "Branding customization"], highlight: true },
               { title: "Pro", price: "$10/mo", desc: "All features + AI, reminders, e-signature", details: ["Everything in Starter", "AI-powered suggestions", "Payment reminders", "E-signature"], },
             ].map((plan) => (
-              <Card key={plan.title} className={`p-8 border-2 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${plan.highlight ? "border-blue-500 dark:border-blue-400 scale-105" : "border-gray-200 dark:border-gray-700"}`}>
+              <Card
+              key={plan.title}
+              className={`p-8 border-2 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-2 
+                ${plan.highlight ? 
+                  "border-blue-500 dark:border-blue-400 scale-105 hover:shadow-[0_0_25px_rgba(59,130,246,0.6)]" : 
+                  "border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]"
+                }`}>
+
                 <CardHeader className="p-0 mb-4">
                   <CardTitle className="text-2xl font-bold text-blue-600 dark:text-blue-400">{plan.title}</CardTitle>
                   <CardDescription className="text-gray-500 dark:text-gray-300">{plan.desc}</CardDescription>
@@ -188,7 +177,10 @@ export default function Home() {
       <section id="faq" className="py-20 px-6 bg-white dark:bg-gray-950">
         <div className="max-w-3xl mx-auto">
           <h3 className="text-3xl font-bold mb-6 text-center">Frequently Asked Questions</h3>
-          <Accordion type="single" collapsible className="w-full space-y-4">
+          <Accordion
+          type="single"
+          collapsible
+          className="w-full rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
             {[
               {
                 q: "Can I use this without signing up?",
@@ -203,7 +195,10 @@ export default function Home() {
                 a: "Yes, we use Supabase and encrypted storage to protect your data. Your privacy is our top priority."
               }
             ].map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg shadow-sm bg-gray-50 dark:bg-gray-800 px-6">
+             <AccordionItem
+              key={index}
+              value={`item-${index}`}
+              className="bg-gray-50 dark:bg-gray-800 px-6">
                 <AccordionTrigger className="font-bold text-xl text-gray-800 dark:text-white py-4 hover:no-underline">{faq.q}</AccordionTrigger>
                 <AccordionContent className="text-gray-600 dark:text-gray-400 pb-4">{faq.a}</AccordionContent>
               </AccordionItem>
