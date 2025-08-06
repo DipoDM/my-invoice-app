@@ -1,9 +1,5 @@
-/* src/app/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-/* You can add custom global styles here if needed */
-html.dark {
-  color-scheme: dark;
+html {
+  scroll-behavior: smooth;
 }
